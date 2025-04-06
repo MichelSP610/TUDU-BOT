@@ -1,0 +1,5 @@
+﻿{
+	//Before changing the token to "token", save this file with the right token in bin/Debug, after doing a build. 
+	"token": "token",
+	"prefix": "/"
+}
