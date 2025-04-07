@@ -1,15 +1,14 @@
 ﻿
 
+using DSharpPlus;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Commands.Processors.TextCommands;
-using DSharpPlus.Commands;
-using DSharpPlus.Entities;
-using DSharpPlus;
-using TUDU_BOT.config;
-using Newtonsoft.Json;
-using TUDU_BOT.commands;
 using DSharpPlus.Commands.Processors.TextCommands.Parsing;
+using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using TUDU_BOT.commands;
+using TUDU_BOT.config;
 
 namespace TUDU_BOT
 {

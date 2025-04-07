@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using DSharpPlus.Commands;
+﻿using DSharpPlus.Commands;
+using DSharpPlus.Commands.ArgumentModifiers;
 using DSharpPlus.Entities;
-using TUDU_BOT.other;
+using TUDU_BOT.Classes;
 
 namespace TUDU_BOT.commands
 {
@@ -11,72 +11,60 @@ namespace TUDU_BOT.commands
         [Command("test")]
         public async Task MyFirstCommand(CommandContext ctx) //EVERY COMMAND NEEDS CommandContext!!!
         {
-            await ctx.Channel.SendMessageAsync($"Tus muertos {ctx.User.Username}, eres subnormal");
-        } 
 
-        [Command("add")]
-        public async Task Add(CommandContext ctx, int number1, int number2)
-        {
-            int resoult = number1 + number2;
-            await ctx.Channel.SendMessageAsync($"{resoult}");
+            var message = new DiscordMessageBuilder()
+            .AddEmbed(new DiscordEmbedBuilder()
+                .WithColor(DiscordColor.Red)
+                .WithAuthor("Jesus")
+                .WithTitle("test"))
+            .AddComponents(new DiscordComponent[]
+            {
+                new DiscordButtonComponent(DiscordButtonStyle.Primary, "1_top", "Blurple!"),
+                new DiscordButtonComponent(DiscordButtonStyle.Secondary, "2_top", "Grey!"),
+                new DiscordButtonComponent(DiscordButtonStyle.Success, "3_top", "Green!"),
+                new DiscordButtonComponent(DiscordButtonStyle.Danger, "4_top", "Red!"),
+                new DiscordLinkButtonComponent("https://google.com", "Link!")
+            });
+
+            await ctx.RespondAsync(message);
         }
 
-        //How to make a embed message
-        [Command("embed2")]
-        public async Task EmbedMessageEz(CommandContext ctx)
+        [Command("addtask")]
+        public async Task AddTask(CommandContext ctx, [RemainingText] string description)
         {
-            var message = new DiscordEmbedBuilder
-            {
-                Title = " VIVA CRISTO REY ",
-                Description = " Ghillerme MARICOOON ",
-                Color = DiscordColor.Red,
-            };
-            await ctx.Channel.SendMessageAsync(embed: message); //SEND 'embed: message' so there is no overload with this method.
+            TaskManager.AddTask(ctx.User.Id, description);
+            await ctx.RespondAsync($"📝 Task added: {description}");
         }
 
-        //Small random card generator Game.
-        [Command("cardgame")]
-        public async Task CardGame(CommandContext ctx)
+        [Command("todo")]
+        public async Task ListTasks(CommandContext ctx)
         {
-            var userCard = new CardSystem();
-
-            var userCardEmbed = new DiscordEmbedBuilder
+            var tasks = TaskManager.GetTasks(ctx.User.Id);
+            if (tasks.Count == 0)
             {
-                Title = $"YOUR CARD is {userCard.selectedCard}",
-                Color = DiscordColor.Black
-            };
-
-            await ctx.Channel.SendMessageAsync (embed: userCardEmbed);
-
-            var botCard = new CardSystem();
-
-            var botCardEmbed = new DiscordEmbedBuilder
-            {
-                Title = $"BOT's CARD IS {botCard.selectedCard}",
-                Color = DiscordColor.Red
-            };
-
-            await ctx.Channel.SendMessageAsync(embed: botCardEmbed);
-
-            if (userCard.selectedNumber > botCard.selectedNumber)
-            {
-                //User Wins
-                var userWinEmbed = new DiscordEmbedBuilder
-                {
-                    Title = "YOU WIN!!!",
-                    Color = DiscordColor.Blue
-                };
-                await ctx.Channel.SendMessageAsync(embed: userWinEmbed);
-            } else
-            {
-                //Bot wins
-                var botWinEmbed = new DiscordEmbedBuilder
-                {
-                    Title = "YOU LOSE :(",
-                    Color = DiscordColor.Blue
-                };
-                await ctx.Channel.SendMessageAsync(embed: botWinEmbed);
+                await ctx.RespondAsync("📭 You have no tasks!");
+                return;
             }
+
+            string response = "🗒️ Your Tasks:\n";
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                response += $"{i + 1}. {tasks[i]}\n";
+            }
+
+            await ctx.RespondAsync(response);
         }
+
+        [Command("complete")]
+        public async Task CompleteTask(CommandContext ctx, int index)
+        {
+            if (TaskManager.CompleteTask(ctx.User.Id, index - 1))
+                await ctx.RespondAsync("✅ Task marked as completed!");
+            else
+                await ctx.RespondAsync("❌ Invalid task number.");
+        }
+
+
+
     }
 }

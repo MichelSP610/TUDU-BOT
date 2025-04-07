@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TUDU_BOT.other
+﻿namespace TUDU_BOT.other
 {
     public class CardSystem
     {
