@@ -19,6 +19,11 @@
             this.IsCompleted = true;
         }
 
+        public void MarkAsIncompleted()
+        {
+            this.IsCompleted = false;
+        }
+
         public override string ToString()
         {
             string status = IsCompleted ? "[X]" : "[ ]";

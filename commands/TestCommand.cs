@@ -36,6 +36,13 @@ namespace TUDU_BOT.commands
             await ctx.RespondAsync($"📝 Task added: {description}");
         }
 
+        [Command("remove")]
+        public async Task removeTask(CommandContext ctx, int index)
+        {
+            TaskManager.RemoveTask(ctx.User.Id, index);
+            await ctx.RespondAsync($"📝 Task removed");
+        }
+
         [Command("todo")]
         public async Task ListTasks(CommandContext ctx)
         {
@@ -60,6 +67,15 @@ namespace TUDU_BOT.commands
         {
             if (TaskManager.CompleteTask(ctx.User.Id, index - 1))
                 await ctx.RespondAsync("✅ Task marked as completed!");
+            else
+                await ctx.RespondAsync("❌ Invalid task number.");
+        }
+
+        [Command("uncheck")]
+        public async Task UnCheckTask(CommandContext ctx, int index)
+        {
+            if (TaskManager.UnCheckTask(ctx.User.Id, index - 1))
+                await ctx.RespondAsync("Task has been unMarked!");
             else
                 await ctx.RespondAsync("❌ Invalid task number.");
         }
