@@ -51,7 +51,7 @@ namespace TUDU_BOT
 
             DiscordClient client = builder.Build();
 
-            DiscordActivity status = new("SEX WITH HITLER", DiscordActivityType.Playing);
+            DiscordActivity status = new("DOING TASKS", DiscordActivityType.Competing);
 
 
             //Connect the bot to the discord servers, and makes the bot stay online while the program is running.

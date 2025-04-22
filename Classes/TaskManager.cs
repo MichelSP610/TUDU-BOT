@@ -13,12 +13,12 @@ namespace TUDU_BOT.Classes
             LoadTasks();
         }
 
-        public static void AddTask(ulong userId, string description)
+        public static void AddTask(ulong userId, string description, DateTime? dueDate = null)
         {
             if (!userTasks.ContainsKey(userId))
                 userTasks[userId] = new List<TaskItem>();
 
-            userTasks[userId].Add(new TaskItem(description));
+            userTasks[userId].Add(new TaskItem(description, dueDate));
             SaveTasks();
         }
 
@@ -26,6 +26,15 @@ namespace TUDU_BOT.Classes
         {
             userTasks[userId].RemoveAt(index - 1);
             SaveTasks();
+        }
+
+        public static void RemoveAllTask(ulong userId)
+        {
+            if (userTasks.ContainsKey(userId))
+            {
+                userTasks[userId].Clear();
+                SaveTasks();
+            }
         }
 
         public static List<TaskItem> GetTasks(ulong userId)
@@ -47,7 +56,7 @@ namespace TUDU_BOT.Classes
 
         public static bool UnCheckTask(ulong userId, int index)
         {
-            if(userTasks.TryGetValue(userId,out var tasks) && index >= 0 && (index < tasks.Count - 1))
+            if(userTasks.TryGetValue(userId,out var tasks) && index >= 0 && (index < tasks.Count))
             {
                 tasks[index].MarkAsIncompleted();
                 SaveTasks();
@@ -73,6 +82,18 @@ namespace TUDU_BOT.Classes
                 string json = File.ReadAllText(SavePath);
                 userTasks = JsonSerializer.Deserialize<Dictionary<ulong, List<TaskItem>>>(json) ?? new Dictionary<ulong, List<TaskItem>>();
             }
+        }
+
+        public static bool EditTask(ulong userId, int index, string newDescription)
+        {
+            if (userTasks.TryGetValue(userId, out var tasks) && index >= 0 && index < tasks.Count)
+            {
+                tasks[index].Description = newDescription;
+                SaveTasks();
+                return true;
+            }
+
+            return false;
         }
 
 

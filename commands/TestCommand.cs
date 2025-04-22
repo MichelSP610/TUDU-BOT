@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Commands;
+﻿using System.Globalization;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.ArgumentModifiers;
 using DSharpPlus.Entities;
 using TUDU_BOT.Classes;
@@ -30,11 +31,21 @@ namespace TUDU_BOT.commands
         }
 
         [Command("addtask")]
-        public async Task AddTask(CommandContext ctx, [RemainingText] string description)
+        public async Task AddTask(CommandContext ctx, string description, string dueDateStr)
         {
-            TaskManager.AddTask(ctx.User.Id, description);
-            await ctx.RespondAsync($"📝 Task added: {description}");
+            DateTime dueDate;
+
+            if (!DateTime.TryParseExact(dueDateStr, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out dueDate))
+            {
+                await ctx.RespondAsync("❌ Invalid date format. Please use dd/MM/yyyy.");
+                return;
+            }
+
+            TaskManager.AddTask(ctx.User.Id, description, dueDate);
+            await ctx.RespondAsync($"📝 Task added: {description} (Due: {dueDate.ToString("dd/MM/yyyy")})");
         }
+
+
 
         [Command("remove")]
         public async Task removeTask(CommandContext ctx, int index)
@@ -42,6 +53,14 @@ namespace TUDU_BOT.commands
             TaskManager.RemoveTask(ctx.User.Id, index);
             await ctx.RespondAsync($"📝 Task removed");
         }
+
+        [Command("cleartasks")]
+        public async Task RemoveAllTask(CommandContext ctx)
+        {
+            TaskManager.RemoveAllTask(ctx.User.Id);
+            await ctx.RespondAsync($"📝 All Tasks have been removed");
+        }
+
 
         [Command("todo")]
         public async Task ListTasks(CommandContext ctx)
@@ -53,14 +72,20 @@ namespace TUDU_BOT.commands
                 return;
             }
 
-            string response = "🗒️ Your Tasks:\n";
+            var embed = new DiscordEmbedBuilder()
+                .WithTitle($"{ctx.User.Username}'s To-Do List")
+                .WithColor(DiscordColor.Blurple);
+
             for (int i = 0; i < tasks.Count; i++)
             {
-                response += $"{i + 1}. {tasks[i]}\n";
+                string status = tasks[i].IsCompleted ? "✅" : "❌";
+                string dueDateStr = tasks[i].DueDate == DateTime.MaxValue ? "No due date" : tasks[i].DueDate.ToString("dd/MM/yyyy");
+                embed.AddField($"Task {i + 1}", $"{status} {tasks[i].Description} (Due: {dueDateStr})", false);
             }
 
-            await ctx.RespondAsync(response);
+            await ctx.RespondAsync(embed);
         }
+
 
         [Command("complete")]
         public async Task CompleteTask(CommandContext ctx, int index)
@@ -80,6 +105,16 @@ namespace TUDU_BOT.commands
                 await ctx.RespondAsync("❌ Invalid task number.");
         }
 
+        [Command("edittask")]
+        public async Task EditTask(CommandContext ctx, int index, [RemainingText] string newDescription)
+        {
+            if (TaskManager.EditTask(ctx.User.Id, index - 1, newDescription))
+                await ctx.RespondAsync("✅ Task updated!");
+            else
+                await ctx.RespondAsync("❌ Invalid task number.");
+        }
+
+    
 
 
     }
