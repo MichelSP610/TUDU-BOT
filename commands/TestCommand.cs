@@ -10,25 +10,42 @@ namespace TUDU_BOT.commands
     {
         //Give the command a name
         [Command("test")]
-        public async Task MyFirstCommand(CommandContext ctx) //EVERY COMMAND NEEDS CommandContext!!!
+        public async Task MyFirstCommand(CommandContext ctx)
         {
+            var tasks = TaskManager.GetTasks(ctx.User.Id);
+            if (tasks.Count == 0)
+            {
+                await ctx.RespondAsync("📭 You have no tasks!");
+                return;
+            }
+
+            var embed = new DiscordEmbedBuilder()
+                .WithTitle($"{ctx.User.Username}'s To-Do List")
+                .WithColor(DiscordColor.Blurple);
+
+            var components = new List<DiscordComponent>();
+
+            // Add buttons for each task
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                string status = tasks[i].IsCompleted ? "✅" : "❌";
+                string dueDateStr = tasks[i].DueDate == DateTime.MaxValue ? "No due date" : tasks[i].DueDate.ToString("dd/MM/yyyy");
+
+                // Add task info to embed
+                embed.AddField($"Task {i + 1}", $"{status} {tasks[i].Description} (Due: {dueDateStr})", false);
+
+                // Add buttons for task actions
+                components.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, $"complete_{i}", "Complete"));
+                components.Add(new DiscordButtonComponent(DiscordButtonStyle.Secondary, $"remove_{i}", "Remove"));
+            }
 
             var message = new DiscordMessageBuilder()
-            .AddEmbed(new DiscordEmbedBuilder()
-                .WithColor(DiscordColor.Red)
-                .WithAuthor("Jesus")
-                .WithTitle("test"))
-            .AddComponents(new DiscordComponent[]
-            {
-                new DiscordButtonComponent(DiscordButtonStyle.Primary, "1_top", "Blurple!"),
-                new DiscordButtonComponent(DiscordButtonStyle.Secondary, "2_top", "Grey!"),
-                new DiscordButtonComponent(DiscordButtonStyle.Success, "3_top", "Green!"),
-                new DiscordButtonComponent(DiscordButtonStyle.Danger, "4_top", "Red!"),
-                new DiscordLinkButtonComponent("https://google.com", "Link!")
-            });
+                .AddEmbed(embed)
+                .AddComponents(components);
 
             await ctx.RespondAsync(message);
         }
+
 
         [Command("addtask")]
         public async Task AddTask(CommandContext ctx, string description, string dueDateStr)
@@ -114,8 +131,6 @@ namespace TUDU_BOT.commands
                 await ctx.RespondAsync("❌ Invalid task number.");
         }
 
-    
-
-
     }
+
 }

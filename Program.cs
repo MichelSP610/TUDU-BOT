@@ -7,6 +7,8 @@ using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands.Processors.TextCommands.Parsing;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using TUDU_BOT.commands;
 using TUDU_BOT.config;
 
@@ -48,6 +50,11 @@ namespace TUDU_BOT
             (
                 b => b.HandleGuildDownloadCompleted(GuildDownloadCompleted)
             );
+
+            builder.UseInteractivity(new InteractivityConfiguration
+            {
+                Timeout = TimeSpan.FromSeconds(30),
+            });
 
             DiscordClient client = builder.Build();
 
