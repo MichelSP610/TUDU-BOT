@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.ArgumentModifiers;
 using DSharpPlus.Entities;
@@ -8,7 +9,7 @@ namespace TUDU_BOT.commands
 {
     public class TestCommand
     {
-        //Give the command a name
+        // Give the command a name
         [Command("test")]
         public async Task MyFirstCommand(CommandContext ctx)
         {
@@ -23,9 +24,7 @@ namespace TUDU_BOT.commands
                 .WithTitle($"{ctx.User.Username}'s To-Do List")
                 .WithColor(DiscordColor.Blurple);
 
-            var components = new List<DiscordComponent>();
-
-            // Add buttons for each task
+            // Add each task to the embed
             for (int i = 0; i < tasks.Count; i++)
             {
                 string status = tasks[i].IsCompleted ? "✅" : "❌";
@@ -33,26 +32,17 @@ namespace TUDU_BOT.commands
 
                 // Add task info to embed
                 embed.AddField($"Task {i + 1}", $"{status} {tasks[i].Description} (Due: {dueDateStr})", false);
-
-                // Add buttons for task actions
-                components.Add(new DiscordButtonComponent(DiscordButtonStyle.Primary, $"complete_{i}", "Complete"));
-                components.Add(new DiscordButtonComponent(DiscordButtonStyle.Secondary, $"remove_{i}", "Remove"));
             }
 
-            var message = new DiscordMessageBuilder()
-                .AddEmbed(embed)
-                .AddComponents(components);
-
-            await ctx.RespondAsync(message);
+            await ctx.RespondAsync(embed);
         }
 
-
         [Command("addtask")]
-        public async Task AddTask(CommandContext ctx, string description, string dueDateStr)
+        public async Task AddTask(CommandContext ctx, string description, [Description("FORMAT DD/MM/YYYY")] string date)
         {
             DateTime dueDate;
 
-            if (!DateTime.TryParseExact(dueDateStr, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out dueDate))
+            if (!DateTime.TryParseExact(date, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out dueDate))
             {
                 await ctx.RespondAsync("❌ Invalid date format. Please use dd/MM/yyyy.");
                 return;
@@ -62,22 +52,19 @@ namespace TUDU_BOT.commands
             await ctx.RespondAsync($"📝 Task added: {description} (Due: {dueDate.ToString("dd/MM/yyyy")})");
         }
 
-
-
         [Command("remove")]
-        public async Task removeTask(CommandContext ctx, int index)
+        public async Task RemoveTask(CommandContext ctx, int index)
         {
             TaskManager.RemoveTask(ctx.User.Id, index);
-            await ctx.RespondAsync($"📝 Task removed");
+            await ctx.RespondAsync($"🗑️ Task removed.");
         }
 
         [Command("cleartasks")]
         public async Task RemoveAllTask(CommandContext ctx)
         {
             TaskManager.RemoveAllTask(ctx.User.Id);
-            await ctx.RespondAsync($"📝 All Tasks have been removed");
+            await ctx.RespondAsync("🗑️ All tasks have been removed.");
         }
-
 
         [Command("todo")]
         public async Task ListTasks(CommandContext ctx)
@@ -93,6 +80,7 @@ namespace TUDU_BOT.commands
                 .WithTitle($"{ctx.User.Username}'s To-Do List")
                 .WithColor(DiscordColor.Blurple);
 
+            // Add each task to the embed
             for (int i = 0; i < tasks.Count; i++)
             {
                 string status = tasks[i].IsCompleted ? "✅" : "❌";
@@ -102,7 +90,6 @@ namespace TUDU_BOT.commands
 
             await ctx.RespondAsync(embed);
         }
-
 
         [Command("complete")]
         public async Task CompleteTask(CommandContext ctx, int index)
@@ -117,7 +104,7 @@ namespace TUDU_BOT.commands
         public async Task UnCheckTask(CommandContext ctx, int index)
         {
             if (TaskManager.UnCheckTask(ctx.User.Id, index - 1))
-                await ctx.RespondAsync("Task has been unMarked!");
+                await ctx.RespondAsync("Task has been unmarked!");
             else
                 await ctx.RespondAsync("❌ Invalid task number.");
         }
@@ -130,7 +117,5 @@ namespace TUDU_BOT.commands
             else
                 await ctx.RespondAsync("❌ Invalid task number.");
         }
-
     }
-
 }
